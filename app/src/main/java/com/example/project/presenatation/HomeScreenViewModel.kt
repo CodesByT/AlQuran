@@ -15,32 +15,38 @@ import kotlinx.coroutines.launch
 
 class HomeScreenViewModel: ViewModel() {
 
-    var surah: Surah by mutableStateOf(
-        Surah(
-            code = 0,
-            data = Data(
-                ayahs = emptyList(),
-                edition = Edition("","","","","","",""),
-                englishName = "",
-                englishNameTranslation = "",
-                name = "",
-                number = 0,
-                numberOfAyahs = 0,
-                revelationType = ""
-            ),
-            status = ""
-        )
-    )
-    var errorMessage: String by mutableStateOf("")
-    fun getSurah(surahNumber : Int){
+
+    var surah by mutableStateOf<Surah?>(null)
+    var isLoading by mutableStateOf(false)
+    var errorMessage by mutableStateOf<String?>(null)
+
+    fun getSurah(surahNumber: Int){
         viewModelScope.launch {
+            isLoading = true
             val apiService = SurahService.getInstance()
-            try{
+            try {
                 val surahData = apiService.getSurah(surahNumber)
                 surah = surahData
-            }catch(e: Exception){
-                errorMessage = e.message.toString()
+                errorMessage = null
+            }catch (e:Exception){
+                errorMessage = e.message
+                surah = null
+            }finally {
+                isLoading = false
             }
+
         }
     }
+//    fun getSurah(surahNumber : Int){
+//        viewModelScope.launch {
+//            val apiService = SurahService.getInstance()
+//
+//            try{
+//                val surahData = apiService.getSurah(surahNumber)
+//                surah = surahData
+//            }catch(e: Exception){
+//                errorMessage = e.message.toString()
+//            }
+//        }
+//    }
 }

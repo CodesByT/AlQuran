@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProjectTheme {
 
-                HomeScreen(vm = homeScreenViewModel )
+                HomeScreen(vm = homeScreenViewModel)
 
             }
         }

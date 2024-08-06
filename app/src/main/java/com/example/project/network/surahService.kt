@@ -1,6 +1,8 @@
 package com.example.project.network
 
+import android.icu.util.TimeUnit
 import com.example.project.models.Surah
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -24,12 +26,22 @@ interface SurahService{
 
         fun getInstance(): SurahService{
             if (apiService == null){
+                //CHANGES
+                val okHttpClient = OkHttpClient.Builder()
+                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+                //CHANGES
+
                 apiService = Retrofit
                     .Builder()
                     .baseUrl(BASE_URL)
+                    .client(okHttpClient) //CHANGES
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(SurahService::class.java)
+
             }
             return apiService!!
         }
