@@ -1,95 +1,99 @@
-package com.example.project.presenatation
+package com.example.project.presentation
 
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerIcon.Companion.Text
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.project.models.Surah
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.util.EnumSet.range
 
 @Composable
-fun HomeScreen( vm: HomeScreenViewModel){
+fun HomeScreen(viewModel: HomeScreenViewModel) {
+    val state by viewModel.surah.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     var sn by remember { mutableStateOf("") }
-    var surahNumber by remember { mutableIntStateOf(0) }
+    var surahNumber by remember { mutableStateOf<Int?>(null) }
 
-    val surah by remember { mutableStateOf(vm.surah) }
-    val isLoading by remember { mutableStateOf(vm.isLoading)}
-    val errorMessage by remember{ mutableStateOf(vm.errorMessage) }
-
-    val c = LocalContext.current
+    val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
-      modifier = Modifier.padding(5.dp),
-    ){ innerPadding ->
+        modifier = Modifier.padding(0.dp),
+        topBar = {
+            Text(
+                " Al Quran ",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth().background(Color.White).padding(top = 20.dp)
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .padding(top = 20.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
-            OutlinedTextField(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp),
-                value = sn,
-                onValueChange = {
-                    sn = it
-                    surahNumber = sn.trim().toInt()
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number,imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (surahNumber in 1..114){
-                            vm.getSurah(surahNumber = surahNumber)
+                    .clip(shape = RoundedCornerShape(15.dp, 15.dp, 0.dp, 0.dp))
+                    .background(Color.White)
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp,top = 10.dp),
+                    value = sn,
 
-                        }else{
-                            Toast.makeText(c,"Invalid Number!!",Toast.LENGTH_LONG).show()
+                    onValueChange = {
+                        sn = it
+                        surahNumber = sn.trim().toIntOrNull()
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            surahNumber?.let { number ->
+                                if (number in 1..114) {
+                                    viewModel.getSurah(number)
+                                } else {
+                                    Toast.makeText(context, "Invalid Number!!", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            keyboardController?.hide()
                         }
-                        keyboardController?.hide()
-
-                    }
+                    )
                 )
-            )
-            when{
-                isLoading->{
+            }
+            when {
+                isLoading -> {
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
@@ -97,28 +101,65 @@ fun HomeScreen( vm: HomeScreenViewModel){
                         CircularProgressIndicator()
                     }
                 }
-                surah != null -> {
-                    Text("Surah ${surah?.data?.englishName}")
-                    surah?.data?.ayahs?.forEach{ ayah ->
-                        ElevatedCard(
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 6.dp
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = ayah.text.toString(),
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
+                state != null -> {
+                    AyahList(state)
                 }
-                errorMessage != null ->{
-                        Toast.makeText(c,"Error Loading Data X(",Toast.LENGTH_LONG).show()
+                errorMessage != null -> {
+                    Toast.makeText(context, "Error Loading Data: $errorMessage", Toast.LENGTH_LONG).show()
                 }
             }
         }
+    }
+}
+@Composable
+fun AyahList(state: Surah?){
+    Box(modifier = Modifier.background(Color.White).padding(bottom = 60.dp)){
+        Column() {
+            Text(
+                "${state?.data?.name}",
+                fontSize = 30.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF339E5F))
+                    .padding(top = 15.dp),
+                style = TextStyle(color = Color.White)
+            )
+            Text(
+                "( ${state?.data?.englishNameTranslation} )",
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF339E5F))
+                    .padding(bottom = 10.dp),
+                style = TextStyle(color = Color.White)
+            )
+        }
+    }
+
+
+
+    state?.data?.ayahs?.forEach { ayah ->
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                    containerColor = Color.White,
+            ),
+        ) {
+            Text(
+                text = ayah.text,
+                modifier = Modifier
+                    .padding(start = 10.dp),
+                textAlign = TextAlign.Right,
+                fontSize = 14.sp,
+                lineHeight = 15.sp,
+
+
+            )
+        }
+        Divider(modifier = Modifier
+            .background(Color.White)
+            .padding(15.dp))
     }
 }

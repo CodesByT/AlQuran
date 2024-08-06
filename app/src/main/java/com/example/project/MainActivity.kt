@@ -12,8 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.project.presenatation.HomeScreen
-import com.example.project.presenatation.HomeScreenViewModel
+import com.example.project.presentation.HomeScreen
+import com.example.project.presentation.HomeScreenViewModel
 import com.example.project.ui.theme.ProjectTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProjectTheme {
 
-                HomeScreen(vm = homeScreenViewModel)
+                HomeScreen(viewModel = homeScreenViewModel)
 
             }
         }

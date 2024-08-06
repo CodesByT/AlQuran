@@ -1,52 +1,37 @@
-package com.example.project.presenatation
+package com.example.project.presentation
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.project.models.Ayah
-import com.example.project.models.Data
-import com.example.project.models.Edition
 import com.example.project.models.Surah
 import com.example.project.network.SurahService
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class HomeScreenViewModel: ViewModel() {
+class HomeScreenViewModel : ViewModel() {
+    private val _surah = MutableStateFlow<Surah?>(null)
+    val surah: StateFlow<Surah?> = _surah
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
-    var surah by mutableStateOf<Surah?>(null)
-    var isLoading by mutableStateOf(false)
-    var errorMessage by mutableStateOf<String?>(null)
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
-    fun getSurah(surahNumber: Int){
+    fun getSurah(surahNumber: Int) {
         viewModelScope.launch {
-            isLoading = true
-            val apiService = SurahService.getInstance()
+            _isLoading.value = true
             try {
-                val surahData = apiService.getSurah(surahNumber)
-                surah = surahData
-                errorMessage = null
-            }catch (e:Exception){
-                errorMessage = e.message
-                surah = null
-            }finally {
-                isLoading = false
+                val response = SurahService.getInstance()// API call here
+                _surah.value = response.getSurah(surahNumber)
+                _errorMessage.value = null
+            } catch (e: Exception) {
+                _errorMessage.value = e.message
+            } finally {
+                _isLoading.value = false
             }
-
         }
     }
-//    fun getSurah(surahNumber : Int){
-//        viewModelScope.launch {
-//            val apiService = SurahService.getInstance()
-//
-//            try{
-//                val surahData = apiService.getSurah(surahNumber)
-//                surah = surahData
-//            }catch(e: Exception){
-//                errorMessage = e.message.toString()
-//            }
-//        }
-//    }
 }
+
