@@ -1,13 +1,11 @@
 package com.example.project.network
 
-import android.icu.util.TimeUnit
+
 import com.example.project.models.Surah
-import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface SurahService{
 
@@ -16,8 +14,10 @@ interface SurahService{
         @Path("surahNumber") number: Int,
     ):Surah
 
-//    @GET("en.asad")
-//    suspend fun getSurah():Surah
+    @GET("{surahNumber}/en.asad")
+    suspend fun getSurahWithEnglishTranslation(
+        @Path("surahNumber") number: Int,
+    ):Surah
 
 
     companion object{

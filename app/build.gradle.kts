@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.media3.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,7 +70,7 @@ dependencies {
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
 
     implementation("androidx.compose.material:material:1.6.8")
@@ -82,5 +83,7 @@ dependencies {
 
     // For previewing Composables in Android Studio
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.3")
+
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.8")
 
 }
